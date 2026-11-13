@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voidship Roster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Oswald:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <div class="eyebrow" id="eyebrow">Rogue Trader · Koronus Expanse · public roster</div>
+    <h1>Voidship Roster</h1>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" role="tab" id="tab-vessels" data-tab="vessels" aria-selected="true">Vessels</button>
+      <button class="tab" role="tab" id="tab-mods" data-tab="mods" aria-selected="false">Component modifiers</button>
+      <button class="tab" role="tab" id="tab-cat" data-tab="cat" aria-selected="false">Component catalogue</button>
+      <button class="tab" role="tab" id="tab-ws" data-tab="ws" aria-selected="false">Workshop</button>
+    </nav>
+    <div class="controls" id="vessel-controls">
+      <div class="control"><span class="label">Faction</span><div class="chips" id="f-faction"></div></div>
+      <div class="control"><span class="label" title="Your own faction tags (click ＋ tag on a card to add one)">Owner</span><div class="chips" id="f-tags"></div></div>
+      <div class="control"><span class="label">Hull</span><div class="chips" id="f-cat"></div>
+        <label class="sort"><span class="label">Class</span><select id="f-hullclass" aria-label="Hull classification"></select></label></div>
+      <div class="control"><span class="label">Ship</span><div class="chips" id="f-unique"></div></div>
+      <div class="control row">
+        <div class="chips" id="f-source"></div>
+        <label class="sort"><span class="label">Sort</span>
+          <select id="sort">
+            <option value="name">Name</option>
+            <option value="space_total">Space (total)</option>
+            <option value="space_remaining">Space (remaining)</option>
+            <option value="weapon_slots">Weapon slots</option>
+            <option value="review">Values needing review</option>
+          </select>
+        </label>
+        <button class="chip" id="dir" aria-label="Reverse sort">↓</button>
+        <label class="toggle"><input type="checkbox" id="house" checked> House rules (armour −12, shields ×2)</label>
+        <button class="chip" id="newvessel" title="Make a new vessel from scratch">＋ New vessel</button>
+        <button class="chip" id="pubpreview" title="Open the public edition exactly as the website would show it (built from your Published flags)">Public preview</button>
+        <button class="chip" id="facrules" title="Give a faction's special rules (Ork Klans and upgrades, Aeldari, Chaos, Kroot, Rak'Gol, Stryxis) to many ships at once">Faction rules</button>
+        <button class="chip" id="recalc" title="Rebuild every vessel from its files and re-check every total, stat, shield count and link">Full recalculation</button>
+        <label class="toggle" title="Show or hide every card's components and everything below them. Overrides the show/hide you set on single cards."><input type="checkbox" id="details" checked> Show components</label>
+        <label class="toggle" title="Show the ships you dropped from the roster, to restore them"><input type="checkbox" id="dropped"> Show dropped ships</label>
+        <label class="toggle" title="Show or hide the marks for your adjustments to book values (swapped components and hulls ⇄, changed craftsmanship, stat values you set from the record or a swap) and the cards' review tags (N needs review, possible misspellings)"><input type="checkbox" id="marks" checked> Adjustment marks</label>
+        <input type="search" id="q" placeholder="Search vessels or components…" aria-label="Search">
+      </div>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <p class="summary" id="summary">Loading…</p>
+  <div class="grid" id="grid"></div>
+  <section id="wsview" hidden>
+    <div class="wsgrid">
+      <div class="mcat"><h2 id="ws-title">New component</h2><div id="ws-form"></div></div>
+      <div class="mcat"><h2>Your components <span class="n" id="ws-count"></span></h2><div id="ws-list"></div></div>
+    </div>
+  </section>
+  <section id="catview" hidden>
+    <div class="modctl">
+      <input type="search" id="cq" placeholder="Search names or rules text…" aria-label="Search the catalogue">
+      <span class="chips" id="c-group"></span>
+    </div>
+    <div class="modctl"><span class="label">Hull class</span><span class="chips" id="c-class"></span><span class="label">Source</span><span class="chips" id="c-src"></span><label class="toggle"><input type="checkbox" id="c-custom" checked> Custom components</label><label class="toggle" title="Card-only entries with no record (stubs)"><input type="checkbox" id="c-stubs" checked> Stubs</label><span class="label">Flag</span><span class="chips" id="c-flag"></span></div>
+    <p class="summary" id="csummary"></p>
+    <div id="clist"></div>
+  </section>
+  <section id="modview" hidden>
+    <div class="modctl">
+      <input type="search" id="mq" placeholder="Search modifiers, targets or components…" aria-label="Search modifiers">
+      <label class="toggle"><input type="checkbox" id="m-cond" checked> Show conditional modifiers</label>
+      <span class="chips" id="m-src"></span>
+    </div>
+    <p class="summary" id="msummary"></p>
+    <nav class="modjump" id="mjump" aria-label="Categories"></nav>
+    <div id="mlist"></div>
+  </section>
+</main>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<dialog id="compare" class="wide" aria-labelledby="compare-title">
+  <div class="dlg-head"><h3 id="compare-title"></h3><button id="compare-close" class="chip" aria-label="Close">Close</button></div>
+  <div id="compare-body"></div>
+</dialog>
+<dialog id="review" aria-labelledby="review-title">
+  <div class="dlg-head"><h3 id="review-title"></h3><button id="review-close" class="chip" aria-label="Close">Close</button></div>
+  <div id="review-body"></div>
+</dialog>
+<dialog id="picker" class="wide picker" aria-labelledby="pk-title">
+  <div class="dlg-head"><h3 id="pk-title">Add to the loadout</h3><button id="pk-close" class="chip" aria-label="Close">Close</button></div>
+  <div class="pk-tabs" role="tablist" id="pk-tabs"></div>
+  <div class="pk-body">
+    <div class="pk-left">
+      <div class="pk-filters" id="pk-filters"></div>
+      <div class="pk-count" id="pk-count" aria-live="polite"></div>
+      <div class="pk-list" id="pk-list" role="listbox" aria-label="Results"></div>
+    </div>
+    <div class="pk-detail" id="pk-detail" aria-live="polite"></div>
+  </div>
+  <div class="pk-toast" id="pk-toast" role="status" hidden></div>
+</dialog>
+<dialog id="confirm" class="confirm" aria-labelledby="cf-title" aria-describedby="cf-msg">
+  <h3 id="cf-title"></h3>
+  <p id="cf-msg"></p>
+  <div class="acts"><button class="act" id="cf-cancel">Cancel</button><button class="act danger" id="cf-ok">Remove</button></div>
+</dialog>
+<div class="legend-bar" aria-hidden="false">
+  <span class="sw dev-pending"></span>Needs review <span class="sw dev-quality"></span>Within quality range <span class="sw dev-custom"></span>Custom variant <span class="sw dev-deferred"></span>Deferred
+  <span class="sw dev-merged"></span>Uses record <span class="sw dev-changed"></span>Record changed since decided <span class="sw alias"></span>Possible misspelling
+</div>
+<script src="data.js" onerror="document.getElementById('summary').textContent='No data.js yet: run python3 tools/voidship_roster/build.py'"></script>
+<script src="app.js"></script>
+</body>
+</html>
